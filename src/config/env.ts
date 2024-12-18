@@ -10,14 +10,14 @@ const envSchema = z.object({
     .string()
     .default("3000")
     .transform((val) => parseInt(val)),
-  DATABASE_URL: z.string().trim(),
+  MONGODB_URI: z.string().trim(),
   JWT_SECRET_KEY: z.string().trim(),
 });
 
 // Validate the .env file
 const env = envSchema.safeParse({
   PORT: process.env.PORT,
-  DATABASE_URL: process.env.DATABASE_URL,
+  MONGODB_URI: process.env.MONGODB_URI,
   JWT_SECRET_KEY: process.env.JWT_SECRET_KEY,
 });
 

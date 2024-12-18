@@ -1,5 +1,5 @@
+import Task from "@/models/task";
 import express from "express";
-import prisma from "@/config/database";
 
 // create task controller
 export const createTask = async (
@@ -14,15 +14,12 @@ export const createTask = async (
     const userId = parseInt(req.user?.id as string);
 
     // create a task
-    const task = await prisma.task.create({
-      data: {
-        title,
-        description,
-        priority,
-        dueTime,
-        userId,
-        startTime: new Date(),
-      },
+    const task = await Task.create({
+      title,
+      description,
+      priority,
+      dueTime,
+      userId,
     });
 
     // return response
@@ -51,12 +48,7 @@ export const updateTask = async (
     const taskId = parseInt(req.params.id);
 
     // check if task exists
-    const task = await prisma.task.findUnique({
-      where: {
-        id: taskId,
-      },
-    });
-
+    const task = await Task.findById(taskId);
     if (!task) {
       res.status(404).send({
         status: false,
@@ -66,18 +58,17 @@ export const updateTask = async (
     }
 
     // update the task
-    const updatedTask = await prisma.task.update({
-      where: {
-        id: taskId,
-      },
-      data: {
+    const updatedTask = await Task.findByIdAndUpdate(
+      taskId,
+      {
         title,
         description,
         priority,
         dueTime,
         status,
       },
-    });
+      { new: true }
+    );
 
     // return response
     res.status(200).send({
@@ -102,11 +93,7 @@ export const deleteTask = async (
     const taskId = parseInt(req.params.id);
 
     // check if task exists
-    const task = await prisma.task.findUnique({
-      where: {
-        id: taskId,
-      },
-    });
+    const task = await Task.findById(taskId);
 
     if (!task) {
       res.status(404).send({
@@ -117,11 +104,7 @@ export const deleteTask = async (
     }
 
     // delete the task
-    await prisma.task.delete({
-      where: {
-        id: taskId,
-      },
-    });
+    await Task.findByIdAndDelete(taskId);
 
     // return response
     res.status(200).send({
@@ -146,10 +129,8 @@ export const getAllTask = async (
     const userId = parseInt(req.user?.id as string);
 
     // get all tasks for the user
-    const tasks = await prisma.task.findMany({
-      where: {
-        userId,
-      },
+    const tasks = await Task.find({
+      userId,
     });
 
     // return response
@@ -172,11 +153,14 @@ export const getTask = async (req: express.Request, res: express.Response) => {
     const taskId = parseInt(req.params.id);
 
     // check if task exists
-    const task = await prisma.task.findUnique({
-      where: {
-        id: taskId,
-      },
-    });
+    const task = await Task.findById(taskId);
+    if (!task) {
+      res.status(404).send({
+        status: false,
+        message: "Task not found",
+      });
+      return;
+    }
 
     if (!task) {
       res.status(404).send({

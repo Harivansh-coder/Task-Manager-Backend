@@ -1,6 +1,6 @@
 import express from "express";
-import prisma from "@/config/database";
 import bcrypt from "bcrypt";
+import User from "@/models/user";
 
 // create user controller
 
@@ -14,10 +14,8 @@ export const createUser = async (
     const { name, email, password } = req.body;
 
     // check if user exists
-    const userExists = await prisma.user.findFirst({
-      where: {
-        email,
-      },
+    const userExists = await User.findOne({
+      email,
     });
 
     if (userExists) {
@@ -35,12 +33,10 @@ export const createUser = async (
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // create a user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
     });
 
     // return response
@@ -70,15 +66,10 @@ export const updateUser = async (
     const { name, email, password } = req.body;
 
     // get the user id from request parameters
-    const userId = parseInt(req.params.id);
+    const userId = req.params.id;
 
     // check if user exists
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-
+    const user = await User.findById;
     if (!user) {
       res.status(404).send({
         status: false,
@@ -89,38 +80,33 @@ export const updateUser = async (
       return;
     }
 
-    // check if password is to be updated
-    let hashedPassword = user.password;
-    if (password) {
-      hashedPassword = await bcrypt.hash(password, 10);
-    }
+    // hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // update the user
-    const updatedUser = await prisma.user.update({
-      where: {
-        id: userId,
+    await User.updateOne(
+      {
+        _id: userId,
       },
-      data: {
+      {
         name,
         email,
         password: hashedPassword,
-      },
-    });
+      }
+    );
 
     res.send({
       status: true,
       data: {
-        id: updatedUser.id,
-        name: updatedUser.name,
-        email: updatedUser.email,
+        message: "User updated successfully",
       },
     });
-  } catch (error: any) {
+
+    // return response
+  } catch (error) {
     res.status(500).send({
       status: false,
-      errors: {
-        error: error.errors,
-      },
+      message: "An error occurred while updating the user",
     });
   }
 };
@@ -132,14 +118,10 @@ export const deleteUser = async (
 ) => {
   try {
     // get the user id from request parameters
-    const userId = parseInt(req.params.id);
+    const userId = req.params.id;
 
     // check if user exists
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
+    const user = await User.findById(userId);
 
     if (!user) {
       res.status(404).send({
@@ -148,13 +130,12 @@ export const deleteUser = async (
           message: "User not found",
         },
       });
+      return;
     }
 
     // delete the user
-    await prisma.user.delete({
-      where: {
-        id: userId,
-      },
+    await User.deleteOne({
+      _id: userId,
     });
 
     res.send({
@@ -181,12 +162,7 @@ export const getUser = async (req: express.Request, res: express.Response) => {
 
     // check if user id exists
     if (userId) {
-      // get a user
-      const user = await prisma.user.findUnique({
-        where: {
-          id: parseInt(userId),
-        },
-      });
+      const user = (await User.findById(userId)) || null;
 
       if (!user) {
         res.status(404).send({
@@ -206,15 +182,19 @@ export const getUser = async (req: express.Request, res: express.Response) => {
           email: user.email,
         },
       });
-    } else {
-      // get all users
-      const users = await prisma.user.findMany();
-
-      res.send({
-        status: true,
-        data: users,
-      });
     }
+
+    // get all users
+    const users = await User.find();
+
+    res.send({
+      status: true,
+      data: users.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      })),
+    });
   } catch (error: any) {
     res.status(500).send({
       status: false,

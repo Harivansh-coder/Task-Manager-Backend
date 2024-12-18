@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
-import prisma from "@/config/database";
 import bcrypt from "bcrypt";
-import { envVariables } from "@/config/env";
 import generateToken from "@/utility/token";
+import User from "@/models/user";
 
 export const loginController = async (req: Request, res: Response) => {
   try {
@@ -10,10 +9,8 @@ export const loginController = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     // check if user exists for this email
-    const user = await prisma.user.findUnique({
-      where: {
-        email,
-      },
+    const user = await User.findOne({
+      email,
     });
 
     if (!user) {

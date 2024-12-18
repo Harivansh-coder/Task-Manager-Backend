@@ -6,6 +6,7 @@ import morgan from "morgan";
 import userRouter from "./routes/user";
 import authRouter from "./routes/auth";
 import taskRouter from "./routes/task";
+import mongoose from "mongoose";
 
 // create a new express application instance
 const app = express();
@@ -21,6 +22,16 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/v1", (_req: express.Request, res: express.Response) => {
   res.send("API is running");
 });
+
+// connect to the database
+mongoose
+  .connect(envVariables.MONGODB_URI, {})
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((error) => {
+    console.error("Error connecting to MongoDB: ", error.message);
+  });
 
 // Use the routes
 app.use("/v1/auth", authRouter);
