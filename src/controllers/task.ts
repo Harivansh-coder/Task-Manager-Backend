@@ -136,9 +136,6 @@ export const getAllTask = async (
     // get the logged in user id
     const userId = req.user?.id as string;
 
-    console.log(userId);
-    console.log("Query params: ", req.query);
-
     // get query params
     const { status, priority } = req.query;
 
@@ -146,7 +143,13 @@ export const getAllTask = async (
     let tasks;
 
     // check if query params are available
-    if (status && priority) {
+    if (
+      status &&
+      priority &&
+      (status === "pending" || status === "finished") &&
+      parseInt(priority as string) >= 1 &&
+      parseInt(priority as string) <= 5
+    ) {
       tasks = await Task.find({
         userId,
         status: status as string,
