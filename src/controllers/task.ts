@@ -157,7 +157,11 @@ export const getAllTask = async (
       });
     } else if (status) {
       tasks = await Task.find({ userId, status: status as string });
-    } else if (priority) {
+    } else if (
+      priority &&
+      parseInt(priority as string) >= 1 &&
+      parseInt(priority as string) <= 5
+    ) {
       tasks = await Task.find({
         userId,
         priority: parseInt(priority as string),
