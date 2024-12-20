@@ -42,4 +42,7 @@ taskRouter.put("/:id", verifyAccessToken, updateTask);
 // delete a task
 taskRouter.delete("/:id", verifyAccessToken, deleteTask);
 
+// delete multiple tasks
+taskRouter.delete("/", verifyAccessToken, deleteTask);
+
 export default taskRouter;

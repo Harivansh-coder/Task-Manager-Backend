@@ -126,6 +126,40 @@ export const deleteTask = async (
   }
 };
 
+// delete multiple tasks controller
+export const deleteMultipleTasks = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    // get the task ids from request body
+    const { taskIds } = req.body;
+
+    // check if taskIds is valid array with length > 0
+    if (!Array.isArray(taskIds) || taskIds.length === 0) {
+      res.status(400).send({
+        status: false,
+        message: "Invalid input, taskIds should be an array with length > 0",
+      });
+      return;
+    }
+
+    // delete the tasks
+    await Task.deleteMany({ _id: { $in: taskIds } });
+
+    // return response
+    res.status(200).send({
+      status: true,
+      message: "Tasks deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).send({
+      status: false,
+      message: "An error occurred while deleting the tasks",
+    });
+  }
+};
+
 // get all tasks for the current user
 // also adding query params to get tasks by status, priority
 export const getAllTask = async (

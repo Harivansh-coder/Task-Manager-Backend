@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTask = exports.getAllTask = exports.deleteTask = exports.updateTask = exports.createTask = void 0;
+exports.getTask = exports.getAllTask = exports.deleteMultipleTasks = exports.deleteTask = exports.updateTask = exports.createTask = void 0;
 const task_1 = __importDefault(require("../models/task"));
 // create task controller
 const createTask = async (req, res) => {
@@ -108,6 +108,35 @@ const deleteTask = async (req, res) => {
     }
 };
 exports.deleteTask = deleteTask;
+// delete multiple tasks controller
+const deleteMultipleTasks = async (req, res) => {
+    try {
+        // get the task ids from request body
+        const { taskIds } = req.body;
+        // check if taskIds is valid array with length > 0
+        if (!Array.isArray(taskIds) || taskIds.length === 0) {
+            res.status(400).send({
+                status: false,
+                message: "Invalid input, taskIds should be an array with length > 0",
+            });
+            return;
+        }
+        // delete the tasks
+        await task_1.default.deleteMany({ _id: { $in: taskIds } });
+        // return response
+        res.status(200).send({
+            status: true,
+            message: "Tasks deleted successfully",
+        });
+    }
+    catch (error) {
+        res.status(500).send({
+            status: false,
+            message: "An error occurred while deleting the tasks",
+        });
+    }
+};
+exports.deleteMultipleTasks = deleteMultipleTasks;
 // get all tasks for the current user
 // also adding query params to get tasks by status, priority
 const getAllTask = async (req, res) => {
