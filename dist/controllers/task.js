@@ -114,14 +114,16 @@ const getAllTask = async (req, res) => {
     try {
         // get the logged in user id
         const userId = req.user?.id;
-        console.log(userId);
-        console.log("Query params: ", req.query);
         // get query params
         const { status, priority } = req.query;
         // get all tasks for the user
         let tasks;
         // check if query params are available
-        if (status && priority) {
+        if (status &&
+            priority &&
+            (status === "pending" || status === "finished") &&
+            parseInt(priority) >= 1 &&
+            parseInt(priority) <= 5) {
             tasks = await task_1.default.find({
                 userId,
                 status: status,
@@ -131,7 +133,9 @@ const getAllTask = async (req, res) => {
         else if (status) {
             tasks = await task_1.default.find({ userId, status: status });
         }
-        else if (priority) {
+        else if (priority &&
+            parseInt(priority) >= 1 &&
+            parseInt(priority) <= 5) {
             tasks = await task_1.default.find({
                 userId,
                 priority: parseInt(priority),
