@@ -2,6 +2,7 @@
 
 import {
   createTask,
+  deleteMultipleTasks,
   deleteTask,
   getAllTask,
   getTask,
@@ -43,6 +44,6 @@ taskRouter.put("/:id", verifyAccessToken, updateTask);
 taskRouter.delete("/:id", verifyAccessToken, deleteTask);
 
 // delete multiple tasks
-taskRouter.delete("/", verifyAccessToken, deleteTask);
+taskRouter.delete("/", verifyAccessToken, deleteMultipleTasks);
 
 export default taskRouter;

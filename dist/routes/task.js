@@ -28,5 +28,5 @@ taskRouter.put("/:id", auth_1.default, task_1.updateTask);
 // delete a task
 taskRouter.delete("/:id", auth_1.default, task_1.deleteTask);
 // delete multiple tasks
-taskRouter.delete("/", auth_1.default, task_1.deleteTask);
+taskRouter.delete("/", auth_1.default, task_1.deleteMultipleTasks);
 exports.default = taskRouter;
