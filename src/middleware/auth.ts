@@ -37,8 +37,11 @@ const verifyAccessToken = (
       return; // Explicitly stop execution
     }
 
-    // Attach user to request object
-    req.user = decoded as JWTPayload;
+    // Cast decoded payload to JWTPayload type
+    const jwtPayload = decoded as JWTPayload;
+
+    // Attach the user id to the request user object
+    req.user = { id: jwtPayload.id };
 
     next(); // Pass control to the next middleware/handler
   });

@@ -7,11 +7,12 @@ import userRouter from "./routes/user";
 import authRouter from "./routes/auth";
 import taskRouter from "./routes/task";
 import mongoose from "mongoose";
+import analyticsRouter from "./routes/analytics";
 
 // create a new express application instance
 const app = express();
 
-// middleware for parsing application/json
+// middlewares
 app.use(helmet());
 app.use(cors());
 app.use(morgan("combined"));
@@ -37,6 +38,7 @@ mongoose
 app.use("/v1/auth", authRouter);
 app.use("/v1/users", userRouter);
 app.use("/v1/tasks", taskRouter);
+app.use("/v1/analytics", analyticsRouter);
 
 // Export the app for Vercel
 export default app;

@@ -8,25 +8,33 @@ import {
   updateTask,
 } from "@/controllers/task";
 import verifyAccessToken from "@/middleware/auth";
+import validateRequestBody from "@/middleware/validate";
 import express from "express";
+import { z } from "zod";
 
 const taskRouter = express.Router();
 
 // GET a task or all tasks
-taskRouter.get(
-  "/:id?",
-  verifyAccessToken,
-  (req: express.Request, res: express.Response) => {
-    if (req.params.id) {
-      getTask(req, res);
-    } else {
-      getAllTask(req, res);
-    }
-  }
-);
+taskRouter.get("/", verifyAccessToken, getAllTask);
+
+// get a task by id
+taskRouter.get("/:id", verifyAccessToken, getTask);
 
 // create a task
-taskRouter.post("/", verifyAccessToken, createTask);
+taskRouter.post(
+  "/",
+  verifyAccessToken,
+  validateRequestBody(
+    // define the schema for the request body
+    z.object({
+      title: z.string().min(3).max(100),
+      dueTime: z.string(),
+      description: z.string().optional(),
+      priority: z.number().int().min(1).max(5).default(1),
+    })
+  ),
+  createTask
+);
 
 // update a task
 taskRouter.put("/:id", verifyAccessToken, updateTask);

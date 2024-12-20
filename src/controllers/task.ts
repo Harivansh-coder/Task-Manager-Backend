@@ -11,13 +11,14 @@ export const createTask = async (
     const { title, description, priority, dueTime } = req.body;
 
     // get the logged in user id
-    const userId = parseInt(req.user?.id as string);
+    const userId = req.user?.id as string;
 
     // create a task
     const task = await Task.create({
       title,
       description,
       priority,
+      startTime: new Date().toISOString(),
       dueTime,
       userId,
     });
@@ -45,7 +46,7 @@ export const updateTask = async (
     const { title, description, priority, dueTime, status } = req.body;
 
     // get the task id from request parameters
-    const taskId = parseInt(req.params.id);
+    const taskId = req.params.id;
 
     // check if task exists
     const task = await Task.findById(taskId);
@@ -57,6 +58,11 @@ export const updateTask = async (
       return;
     }
 
+    // if status is finished, set the endTime
+    if (status === "finished") {
+      task.endTime = new Date();
+    }
+
     // update the task
     const updatedTask = await Task.findByIdAndUpdate(
       taskId,
@@ -66,6 +72,7 @@ export const updateTask = async (
         priority,
         dueTime,
         status,
+        endTime: task.endTime,
       },
       { new: true }
     );
@@ -90,7 +97,7 @@ export const deleteTask = async (
 ) => {
   try {
     // get the task id from request parameters
-    const taskId = parseInt(req.params.id);
+    const taskId = req.params.id;
 
     // check if task exists
     const task = await Task.findById(taskId);
@@ -120,18 +127,41 @@ export const deleteTask = async (
 };
 
 // get all tasks for the current user
+// also adding query params to get tasks by status, priority
 export const getAllTask = async (
   req: express.Request,
   res: express.Response
 ) => {
   try {
     // get the logged in user id
-    const userId = parseInt(req.user?.id as string);
+    const userId = req.user?.id as string;
+
+    console.log(userId);
+    console.log("Query params: ", req.query);
+
+    // get query params
+    const { status, priority } = req.query;
 
     // get all tasks for the user
-    const tasks = await Task.find({
-      userId,
-    });
+    let tasks;
+
+    // check if query params are available
+    if (status && priority) {
+      tasks = await Task.find({
+        userId,
+        status: status as string,
+        priority: parseInt(priority as string),
+      });
+    } else if (status) {
+      tasks = await Task.find({ userId, status: status as string });
+    } else if (priority) {
+      tasks = await Task.find({
+        userId,
+        priority: parseInt(priority as string),
+      });
+    } else {
+      tasks = await Task.find({ userId });
+    }
 
     // return response
     res.status(200).send({
@@ -150,7 +180,7 @@ export const getAllTask = async (
 export const getTask = async (req: express.Request, res: express.Response) => {
   try {
     // get the task id from request parameters
-    const taskId = parseInt(req.params.id);
+    const taskId = req.params.id;
 
     // check if task exists
     const task = await Task.findById(taskId);
